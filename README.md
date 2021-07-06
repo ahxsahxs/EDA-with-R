@@ -37,4 +37,4 @@ Com ambas as ferramentas instaladas, você será capaz de abrir o arquivo *EDA w
 Antonio Henrique Xavier da Silva
 *desenvolvedor de software*
 
-[Para entrar em contato comigo, me mande um email](mailto:antonio.henrique.if@gmail.com)
+Para entrar em contato comigo, mande um email para: [antonio.henrique.if@gmail.com](mailto:antonio.henrique.if@gmail.com)
