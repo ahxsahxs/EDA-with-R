@@ -1,0 +1,357 @@
+---
+title: "EDA with R.2"
+author: "Antonio Henrique"
+date: "01/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Análise exploratória de dados
+
+Para solução de problemas orientados a dados, necessitamos conhecer bem a estrutura e as características das informações com as quais estamos trabalhando. Ao formular um problema de pesquisa que será respondido através da realização de experimentos, devemos saber de antemão quais variáveis serão observadas e valores devemos esperar de cada uma.
+
+Com o intuito de compreender melhor os dados que utilizamos na construção de um programa, dispomos de técnicas de visualização que nos permitem identificar as principais características, além de possíveis correlações e discrepâncias das amostras coletadas.
+
+Essas técnicas vem sendo desenvolvidas há séculos como ferramentas auxiliares na realização de cálculos estatísticos, e o principal objetivo é evidenciar certas características de interesse do fenômeno que estamos observado. Essas características incluem, por exemplo, as medidas de localização e de dispersão da amostra.
+
+Essas medidas são descritas na forma de **estatísticas** (uma função dos valores coletados da amostra), e essas estatísticas são utilizadas para analisar e modelar o comportamento do processo que gerou a amostra.
+
+Em geral modelamos as características de nossos objetos de estudo na forma de **variáveis aleatórias**, e estas variáveis aleatórias assumem valores numéricos, sejam eles contínuos ou discretos.
+
+* Variáveis aleatórias contínuas podem assumir qualquer valor real. Este tipo de informação em geral é proveniente da medição de alguma quantidade física. Podemos citar por exemplo a altura dos participantes da turma.
+
+* Variáveis aleatórias discretas assumem apenas um conjunto conhecido de números. Existem duas situações em que este tipo de variável estará presente:
+
+   + Variáveis de contagem, como por exemplo o número de participantes desta turma. Neste caso o conjunto de possíveis valores é o conjunto dos números naturais (*integer*).
+
+   * Variáveis categóricas, como por exemplo o sexo de cada participante desta turma. Neste caso o conjunto de possíveis valores é um conjunto finito de valores (*factor*).
+
+
+# 2. Modelagem Estatística
+
+Para uma melhor visualização dos dados necessitamos de um conjunto de princípios teóricos que orientem a gramática que será utilizada na leitura dos gráficos produzidos. Aqui trabalharemos com as técnicas da modelagem estatística, portanto é necessário entender que um dos objetivos dessas técnicas é analisar e interpretar um fenômeno aleatório, de forma que a **perda de informação** proveniente da análise seja controlada. 
+
+Dizemos que há perda de informação quando reduzimos a complexidade do objeto de estudo a um conjunto numérico de valores. Dessa forma é inerente à experimentação cientifíca uma perda de informação relacionada ao processo de amostragem, isto é, os dados coletados não contém toda a informação necessária para compreender completamente o fenômeno em estudo.
+
+Além disso, quando resumimos a informação de uma amostra por alguma função dos valores amostrais, como a média ou o mínimo, há uma segunda perda de informação. Para facilitar este processo de modelagem trabalhamos com funções já conhecidas e com boas propriedades, geralmente chamadas de medidas de localização e de dispersão.
+
+## 2.1. Medidas de localização
+
+Medidas de localização são estatísticas que nos informam em qual região do conjunto de possíveis valores se concentram nossas variáveis. Por exemplo, o valor mínimo, o valor máximo, a média e a mediana. Estas estatísticas nos dão uma ideia dos limites de valores que nossas variáveis assumem, além dos valores mais prováveis de serem observados.
+
+Seja $x_1, x_2, x_3, ..., x_n$ uma amostra aleatória da variável contínua $X$. Vejamos abaixo a definição dessas estatísticas:
+
+
+### 2.1.1. Mínimo e Máximo
+
+O valor mínimo e o valor máximo de uma variável representam os limites dos valores que essa variável pode assumir. Em dados de contagem, por exemplo, sabemos que o valor mínimo é 0 e o valor máximo é $+ \infty$, todavia em muitas situações os limites teóricos são muito abrangentes e portanto é interessante ser capaz de estimá-lo.
+
+
+
+$$ min(X) = X_{(1)} = min(x_1, x_2, ..., x_n) $$
+$$ max(X) = X_{(n)} = max(x_1, x_2, ..., x_n) $$
+
+### 2.1.2. Média
+
+A média de uma amostra aleatória é uma função de extrema importância para modelagem estatística, uma vez que o valor médio muitas vezes é uma informação que resume bem a característica de interesse. De forma conceitual, o valor médio é obtido de forma que possamos substituir os dados amostrais por ele, sem que haja grande perda de informação.
+
+$$  \bar x = \sum_{i=1}^n { {x_i} \over {n} } $$
+
+### 2.1.3. Mediana
+
+Além de determinar um valor de referência para nossa amostra, como a média, em geral é útil determinar também se é mais provável encontrar valores maiores ou menores do que essa referência. Para isto existem medidas denominadas **quantis** e um deles é a mediana.
+
+Seja $X_{(1)} = min(X)$ o menor valor da amostra, $X_{(2)}$ o segundo menor valor, $X_{(3)}$ o terceiro menor valor e assim por diante, até $X_{(n)}$ o maior valor da amostra. A mediana é definida como $X_{({{n+1} \over {2}})}$, caso n seja ímpar, e ${X_{({{n} \over {2}})} + X_{({{n} \over {2} }+1)}} \over {2}$ caso n seja par.
+
+De forma conceitual a mediana divide a amostra em dois grupos de mesma probabilidade, metade da amostra será maior do que a mediana e a outra metade da amostra será menor. Portanto, se em uma amostra a mediana é maior do que a média, temos um indício de que os valores da variável se concentram acima da média. Caso a mediana seja menor do que a média, o contrário ocorre.
+
+É possível definir quantis como a mediana para qualquer valor de probabilidade entre 0 e 1. Por exemplo, suponha que queiramos definir o quantil de 25%, definido como $q_{0.25}$. Este é o valor que divide o espaço amostral de $X$ em duas partes, sendo que a chance de observarmos valores de $X$ menores do que $q_{0.25}$ é de 25%, enquanto a chance de observar valores de $X$ maiores do que $q_{0.25}$ é de 75%. 
+Os quantis de 25% e 75% são chamados de primeiro e terceiro quartis respectivamente. Estes valores, em conjunto com a mediana nos fornecem informações sobre a assimetria de nossas variáveis.
+
+## 2.2. Medidas de dispersão
+
+Chamamos de dispersão de uma variável aleatória a magnitude da discrepância que esperamos observar entre os valores que compôem o intervalo amostral. Em outras palavras, uma medida de dispersão é um valor numérico que representa o quão distante os valores observados estão uns dos outros. Conforme aumenta a diferença entre os elementos de uma amostra, também aumenta a dispersão.
+
+Trabalharemos com três medidas de dispersão neste curso, a variância, o desvio padrão e a distância interquartílica.
+
+### 2.2.1. Variância
+
+A variância de uma amostra é definida como:
+
+$$Var(X) = s^2_x = \sum_{i=1}^n { {(x_i - \bar x)^2} \over {n} }$$
+
+A quantidade $x_i - \bar x$ é chamada de desvio amostral do indivíduo $i$ em relação a média $\bar x$. Note que a soma dos desvios amostrais para uma amostra é sempre igual a 0:
+
+$$ 
+\sum_{i=1}^n (x_i - \bar x) = \sum_{i=1}^n x_i - \sum_{i=1}^n \bar x \\
+ = \sum_{i=1}^n x_i - n \cdot \bar x \\
+ = \sum_{i=1}^n x_i - n \cdot \sum_{i=1}^n {{x_i} \over {n}} \\
+ = \sum_{i=1}^n x_i - \sum_{i=1}^n {x_i} \\
+ = 0
+$$
+
+Dessa forma não é possível ter ideia do desvio total da amostra em relação a média apenas somando os desvios de cada indivíduo. Essa ideia de desvio total é que chamamos de dispersão. Para que seja possível definir uma estatística baseada nos desvios individuais devemos primeiro elevá-los ao quadrado. Outra alternativa seria utilizar o valor absoluto do desvio.
+
+
+### 2.2.2. Desvio padrão
+
+Observe que a variância é definida como a média dos desvios quadráticos, desta forma ela está em uma escala diferente da variável observada. Suponha um experimento onde precimos medir o comprimento de algumas folhas de uma determinada espécie de planta. Cada medida será registrada na escala de centímetros ($cm$). Todavia o desvio quadrático médio estará na escala de centímetros quadrados ($cm^2$).
+
+Uma estatística que representa o desvio ao qual estamos sujeitos, utilizando a média como resumo dos dados, é o desvio padrão obtido pela raiz quadrada da variância. Isto é,
+
+$$s_x = \sqrt[ ]{s_x^2} = \sqrt[ ]{ \sum_{i=1}^n { {(x_i - \bar x)^2} \over {n} } }$$
+
+### 2.2.3. Distância Interquartílica
+
+Uma outra forma de representar a dispersão dos dados e que leva em consideração a assimetria dos dados é a distância interquartílica, definida como a diferença entre o terceiro e o primeiro quartil amostral. Isto é
+
+$$d_{(0.75, 0.25)} = q_{0.75} - q_{0.25}$$
+
+Onde $q_{0.75}$ e $q_{0.25}$ são os quantis de probabilidade $0.75$ e $0.25$, respectivamente.
+
+
+
+# 3. Interpretação das estatísticas
+
+Focaremos nossos estudos na média, na mediana, no desvio padrão e na distância interquartílica. As duas primeiras medidas são de localização e nos informam em torno de qual valor a nossa amostra se concentra. As duas últimas são medidas de dispersão e nos auxiliam na tarefa de estabelecer os limites de confiança que serão utilizados na análise dos dados.
+
+De forma geral supomos que as características que estamos analisando se comportam de forma controlada em torno de um valor médio, e supomos também que e a variação em torno da média é limitada. Dessa forma conhecer a média e a variância de uma variável é suficiente para obter uma ideia geral de seu comportamento.
+
+Para verificar a presença de supostas irregularidades nessas condições dispomos da mediana e da distância interquartílica, que juntas fornecem informação mais realista para estimar o intervalo de confiança da amostra.
+
+
+
+Considere por exemplo os seguintes dados provenientes da área de nutrição e registram o comprimento de células de odontoblasto em uma amostra de 60 porquinhos-da-índia após a aplicação de uma dieta de vitamina C. Estes dados estão disponíveis de forma pública no ambiente R e são utilizados para fins didáticos e como documentação da própria linguagem.
+
+
+Os dados são compostos de 60 observações, uma para cada porquinho-da-índia, e registram as seguintes variáveis:
+
+* *dose*: Dose diária administrada para o indivíduo durante a dieta, podendo ser **0.5**, **1.0** ou **2.0**;
+* *supp*: Forma de administração utilizada, podendo ser **OJ - suco de laranja** ou **VC - ácido ascórbico **;
+* *len*: Comprimento da célula para aquele indivíduo, sendo um número real.
+
+
+```{r}
+# Importação dos dados
+data("ToothGrowth")
+?ToothGrowth
+print(ToothGrowth)
+# Experimente: View(ToothGrowth)
+```
+
+Num primeiro momento vamos observar apenas a variável *len* (comprimento da célula). O código abaixo extrai essa variável do **data.frame** original e define alguns objetos contendo as estimativas das quatro estatísticas de estudo para a variável *len*:
+
+```{r}
+
+# Salvo os dados do peso no objeto MassaVegetal
+Comprimento = ToothGrowth$len
+
+media = mean(Comprimento)
+desvio_padrao = sd(Comprimento)
+# Alternativamente, desvio_padrao = sqrt(var(Comprimento))
+
+
+mediana = quantile(Comprimento, 0.5)
+terceiro.quartil = quantile(Comprimento, 0.75)
+primeiro.quartil = quantile(Comprimento, 0.25)
+distancia_interquatilica = terceiro.quartil - primeiro.quartil
+
+print(paste('Média:', media, '; Desvio Padrão:', desvio_padrao))
+print(paste('Mediana:', mediana, '; Distância interquartílica:', distancia_interquatilica))
+```
+
+Nosso primeiro objetivo é determinar a região onde os valores da variável se concentram. Para isto utilizaremos de dois métodos.
+
+# 4. Intervalo de confiança a partir da média e da variância
+
+Neste primeiro método assumimos que a faixa onde nossos dados se concentram está localizada em torno da média e seu comprimento é dado por um múltiplo do desvio padrão.
+
+Para os dados utilizados, podemos construir uma região centrada na média e cujos os limites estão localizados a uma distância de 1 desvio padrão do centro.
+
+```{r}
+
+intervalo.1.minimo = media - 1 * desvio_padrao
+intervalo.1.maximo = media + 1 * desvio_padrao
+
+intervalo.1 = c(intervalo.1.minimo, intervalo.1.maximo)
+names(intervalo.1) = c('minimo', 'maximo')
+
+print(intervalo.1)
+
+```
+
+Verifiquemos essa informação visualmente:
+
+```{r}
+
+plot(Comprimento, 
+     xlab = 'Porquinho-da-índia',
+     ylab = 'Comprimento do odontoblasto')
+abline(h = media, col = 'blue')
+abline(h = intervalo.1['minimo'], col = 'red')
+abline(h = intervalo.1['maximo'], col = 'red')
+
+title(main = 'Dispersão da variável Comprimento do odontoblasto',
+      sub = 'Limites construídos utilizando a média e o desvio padrão')
+
+```
+
+
+Observe como os dados se distribuem ao redor da média. As linhas vermelhas delimitam o nosso intervalo de confiança esperado e a azul representa a média da amostra.
+Note ainda que a maioria dos indivíduos está à uma distância menor do que um desvio padrão da média.
+
+Confira a seguir a proporção de indivíduos que se encontram fora do intervalo de confiança adotado:
+
+```{r}
+
+quantidade_total = length(Comprimento)
+
+abaixo_limite_inferior = Comprimento < intervalo.1['minimo']
+acima_limite_superior = Comprimento > intervalo.1['maximo']
+
+quantidade_fora = sum(abaixo_limite_inferior | acima_limite_superior)
+
+proporcao = quantidade_fora / quantidade_total
+
+print(proporcao)
+
+```
+
+A proporção encontrada foi de $0.333$, isto é, um terço dos indivíduos da amostra estão a uma distância maior do que um desvio padrão da média.
+
+
+# 5. Intervalo amostral a partir dos quantis
+
+Uma forma alternativa de construir esse intervalo sem supor que os dados se distribuem de forma simétrica ao redor da média é utilizando os quantis amostrais. Neste caso o limite inferior de confiança é dado pelo primeiro quartil amostral subtraído por um fator da distância interquartílica, e o limite superior de confiança é dado pelo terceiro quartil amostral somado deste mesmo fator.
+
+Observe abaixo a construção do intervalo de confiança utilizando um fator de meia distância interquartílica:
+
+```{r}
+
+intervalo.2.minimo = primeiro.quartil - 0.5 * distancia_interquatilica
+intervalo.2.maximo = terceiro.quartil + 0.5 * distancia_interquatilica
+
+intervalo.2 = c(intervalo.2.minimo, intervalo.2.maximo)
+names(intervalo.2) = c('minimo', 'maximo')
+
+print(intervalo.2)
+
+```
+
+```{r}
+
+plot(Comprimento, 
+     xlab = 'Porquinho-da-índia',
+     ylab = 'Comprimento do odontoblasto')
+abline(h = media, col = 'blue')
+abline(h = intervalo.2['minimo'], col = 'red')
+abline(h = intervalo.2['maximo'], col = 'red')
+
+title(main = 'Dispersão da variável Comprimento do odontoblasto',
+      sub = 'Limites construídos utilizando os quantis amostrais')
+
+```
+
+
+
+# 6. Plots básicos
+
+Utilizando a linguagem R temos disponíveis algumas ferramentas padrão para criar imagens. Estas ferramentas estão localizadas nas bibliotecas ***base*** e ***graphics***, ambas dísponíveis no contexto padrão do ambiente.
+
+Para ver a documentação da biblioteca ***graphics***, execute os seguintes comandos:
+
+```{r}
+?graphics
+library(help = 'graphics')
+```
+
+## 6.1. Boxplot
+
+A primeira análise a ser realizada com os dados de um experimento é a estimação do intervalo onde os valores de sua amostra se localizam. Um diagrama muito útil para exibir essa informação é o **boxplot**, proposto pelo estatístico John Tukey. Neste diagrama observamos ao mesmo tempo os quartis, um intervalo de confiança e pontos discrepantes da amostra.
+
+```{r}
+
+niveis.dose = unique(ToothGrowth$dose)
+
+par(mfrow = c(1, length(niveis.dose)))
+
+for(nivel.dose in niveis.dose) {
+   df.dose = subset(ToothGrowth, dose == nivel.dose)
+   
+   boxplot(df.dose$len,
+           main = paste('Dose diária:', nivel.dose),
+           ylim = c(0, 40),
+           xlab = '',
+           ylab = 'Comprimento do odontoblasto')
+}
+
+
+```
+
+
+Neste diagrama podemos ver que o comprimento do odontoblasto varia de cerca de 5 até 35. Além disso a mediana de cada grupo é consideravelmente diferente dos outros. Podemos notar também que o segundo grupo, ao qual foi administrada a dose diária de 1 mg, a distância interquartílica é ligeiramente maior do que nos outros dois grupos.
+
+## 6.2. Scatter Plot ou Diagrama de Dispersão
+
+O gráfico que representa a variação conjunta de duas variáveis numéricas é chamado de *diagrama de dispersão*. Através dele somos capazes de identificar possíveis **associações** entre as variáveis em estudo. Para ilustrar o processo de construção considere as variáveis *dose* e *len* dos dados importados:
+
+```{r}
+ToothGrowth[, c('dose', 'len')]
+```
+
+Para representar graficamente a maneira como a variável *len* se comporta em relação à alterações na variável *dose* dispomos estas variáveis em dois eixos coordenados. A **variável resposta** é disposta no eixo vertical enquanto a **variável explicativa** é disposta no eixo horizontal.
+
+Em seguida, para cada par de observações da amostra, adicionamos um ponto nas respectivas coordenadas dos eixos construídos anteriormente.
+
+Este procedimento é implementado na função **plot** do pacote ***base***:
+
+```{r}
+?base::plot
+
+plot(x = ToothGrowth$dose, y = ToothGrowth$len,
+     main = 'Dispersão do Comprimento do odontoblasto e Dose diária',
+     sub = 'Dados coletados a partir de 60 observações independentes',
+     xlab = 'Dose diária',
+     ylab = 'Comprimento do odontoblasto')
+```
+
+Observe que há sobreposição de vários indivíduos na variável *dose*, isto ocorre porque a dose administrada aos indivíduos é um fator de tratamento do experimento, isto é, vários indivíduos foram observados sob as mesmas condições de controle para esta variável.
+
+
+## 6.3. Gráfico de barras
+
+Para fins de ilustração, vamos apresentar também os valores médios de cada grupo em um gráfico de barras. 
+
+```{r}
+
+obter_media_grupo = function (nivel.dose) {
+   
+   df.dose = subset(ToothGrowth, dose == nivel.dose)
+   
+   return(mean(df.dose$len))
+   
+}
+
+medias_tratamentos = sapply(niveis.dose, obter_media_grupo)
+names(medias_tratamentos) = niveis.dose
+
+barplot(medias_tratamentos,
+        main = 'Média do comprimento do odontoblasto',
+        xlab = 'Dose diária',
+        ylab = 'Comprimento do odontoblasto')
+```
+
+# 7. Exercícios
+
+1. Crie os boxplots do comprimento do odontoblasto para os dados ***ToothGrowth***, mas agora considere como variável explicativa a forma de administração utilizada (*sup*). Qual a interpretação do gráfico?
+
+2. Importe os dados presentes na biblioteca **chickwts**. Isto pode ser feito executando o comando *data('chickwts')*. Ao fazer isto o objeto **ChickWeight**, do tipo *data.frame*, estará presente na memória.
+
+   2.1. Crie o data.frame **galinha1** a partir das linhas de **ChickWeight** onde a coluna *Chick* seja igual a 1. Selecione apenas as colunas *weight* e *Time*.
+   
+   2.2. Considerando que a variável explicativa é *Time* e a variável resposta é *weight*, faça o diagrama de boxplot para a variável resposta e faça também o diagrama de dispersão conjunta da variável resposta em relação a variável explicativa.
+   
+   2.3. Considerando agora que a variável explicativa é a *Diet*, obtenha o valor médio dos pesos das galinhas para cada nível de tratamento. Faça o gráfico de barras do peso médio em cada dieta.

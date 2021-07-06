@@ -1,0 +1,602 @@
+---
+title: "EDA with R - Parte 1"
+author: "Antonio Henrique Xavier da Silva"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# 1 Introdução
+
+Abordaremos os princípios de lógica de programação e a preparação do ambiente para desenvolvimento em R. As principais classes de objetos e estruturas de controle serão apresentadas aqui.
+
+# 1.1 Lógica de programação
+
+O método padrão utilizado para desenvolvimento de programas é a criação de documentos de texto, escritos em linguagens próprias para tal fim. As primeiras linguagens de programação datam da década de 1950 e funcionavam através de equipamentos eletrônicos que utilizavam tecnologia bem distinta das atuais, e de lá para cá, também mudaram os fins para os quais novas linguagens foram escritas.
+
+R é um projeto de software livre, que foi primeiramente anunciado em 1993 e tem se tornado uma ferramenta valiosa para tarefas que envolvem o tratamento e a interpretação de dados, sendo comumente adotado em empresas e instituições que trabalham com pesquisa.
+
+## 1.2 Scripting
+
+R é uma linguagem de script interpretada. Isto significa que os documentos são escritos na forma de um **script** e que o processamento é feito através de uma interpretação direta do conteúdo do documento.
+
+Observe por exemplo, a seguinte linha de código:
+
+```{r}
+print('Hello World!')
+```
+
+
+
+O código executado é composto de dois dois componentes:
+
+
+*   Uma invocação a função **print**
+*   O objeto composto pelos caracteres **Hello World!**
+
+
+
+## 1.3 Objetos
+
+Para representar números, textos, datas, condições e até mesmo pessoas utilizamos um conceito abstrato na lógica de programação: o **objeto**.
+
+Obejtos são a representação que damos a coisas externos ao computador.
+Por padrão a linguagem R define os seguintes tipos de objetos:
+
+*   character
+*   numeric (real ou decimal)
+*   integer
+*   logical
+*   complex
+
+O primeiro tipo é utilizado para guardar caracteres alfanuméricos e outros símbolos de escrita.
+
+Para representar números de ponto flutuante (que possuem parte decimal) o tipo numeric é utilizado, sendo que números estritamente decimais possuem uma representação diferente dos números reais.
+
+Existem ainda tipos para representar números inteiros, para representar a veracidade de uma afirmação (**TRUE** ou **FALSE**) e para representar números que possuem parte imaginária.
+
+Alguns exemplos:
+
+```{r}
+class('Arroz')
+```
+
+```{r}
+class(2 / 5)
+```
+
+```{r}
+class(2)
+```
+```{r}
+class(2L)
+```
+
+```{r}
+class(5 > 2)
+```
+
+```{r}
+class(2 + 5i)
+```
+
+
+
+## 1.4 Solução de problemas através da linguagem
+
+O principal objetivo da computação é permitir o tratamento de informações de uma maneira sistemática, e mais ainda, programática. Isto significa que criamos **programas**, isto é, instruções escritas e organizadas de forma que um computador seja capaz de intepretar cada instrução fornecida.
+
+Para criar os programas, especificamos um conjunto de regras que devem ser seguidas pelo computador e pelo programador, de forma que possamos escrever as instruções a serem executadas em uma linguagem conhecida por nós. Cada linguagem tem características próprias e são mais ou menos adequadas dependendo da natureza do problema que será abordado.
+
+A linguagem R foi criada como uma ferramenta para realização de cálculos e transformação de dados em ambiente de pesquisa experimental, sendo portanto adequada para problemas desse ambiente.
+
+Utilizando o interpretador da linguagem R, o documento é lido de forma sequencial do início ao fim, e a isso damos o nome de script. Em outras linguagens, como C e COBOL, os documentos são escritos de forma estruturada, isto é, ele é dividido em diferentes seções, e cada uma tem função específica.
+
+Os scripts são compostos basicamente por três elementos:
+
+*    declarações de objetos
+*    invocações de funções
+*    estruturas de controle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 Estruturas de Dados
+
+
+Para facilitar o tratamento das informações que dispomos, representamos os dados de forma organizada, através de estruturas que serão úteis na resolução de diversos problemas.
+
+Essas estruturas representam coleções de dados que partilham de alguma característica comum, e portanto podem ser interpretados em conjunto.
+
+As principais estruturas que utilizaremos durante este curso são:
+
+* vector
+* matrix
+* list
+* data.frame
+* factor
+
+Cada um destes tipos funciona como um agrupador para coleções de objetos de tipos primitivos.
+
+
+## 2.1 Vetores
+O **vector** é a estrutura base dos objetos em R. Ele representa um lista qualquer de valores do mesmo tipo, por exemplo:
+
+* uma lista contendo a quantidade de erros encontrados em 4 textos;
+* uma lista contendo os alimentos que estavam em seu almoço.
+
+Confira alguns exemplos:
+
+```{r}
+c(10, 0, 7, 4)
+```
+
+```{r}
+c('Arroz', 'Feijão', 'Abacate')
+```
+
+Cada um destes vetores é formado por uma coleção de objetos mais simples. No primeiro caso por números e no segundo por cadeias de caracteres.
+
+
+## 2.2 Matrizes
+
+Um dos princípios da experimentação científica é da repetibilidade, segundo o qual devemos orientar nossos estudos pela repetição sucessiva de experimentos e observar as características que são de nosso interesse.
+
+Imagine por exemplo um experimento no qual desejamos investigar o efeito que a temperatura do ambiente exerce sobre a taxa de reprodução de uma determinada bactéria em uma placa de Petri.
+
+O experimento foi conduzido em três temperaturas distintas, 25 ºC, 30 ºC e 35 ºC. Para cada temperatura 3 placas foram preparadas com populações de mesmo tamanho da bactéria, e após uma hora foi registrado o aumento relativo da população:
+
+$$AumentoRelativo = {{Populacao \; inicial} \over {Populacao \; final}}$$
+
+Para cada placa foi registrada a temperatura na qual o experimento ocorreu e o aumento relativo da população de bactérias após uma hora. Os dados obtidos são declarados a seguir:
+
+```{r}
+dados.bacterias = c(25, 1,
+                    25, 1.1,
+                    25, 1.1,
+                    30, 1.4,
+                    30, 1.5,
+                    30, 1.8,
+                    35, 1.7,
+                    35, 1.8,
+                    35, 1.9)
+
+matrix.bacterias = matrix(dados.bacterias, ncol = 2, byrow = TRUE)
+
+colnames(matrix.bacterias) = c('Temperatura', 'AumentoRelativo')
+
+print(matrix.bacterias)
+```
+
+
+Para qualquer tipo de dado tabular no R (matrizes e data frames) podemos fazer uma operação de *slicing* no objeto, selecionando apenas linhas ou colunas que sejam de nosso interesse. Observe alguns exemplos:
+
+```{r}
+# Primeira linha da matriz, todas as colunas
+matrix.bacterias[ 1, ]
+```
+
+
+```{r}
+# Primeira linha da matriz, primeira coluna
+matrix.bacterias[ 1, 1]
+```
+
+```{r}
+# Primeira linha da matriz, segunda coluna
+matrix.bacterias[ 1, 2]
+```
+
+```{r}
+# Todas as linhas da matriz, primeira coluna
+matrix.bacterias[ , 1]
+```
+
+```{r}
+# Todas as linhas da matriz, segunda coluna
+matrix.bacterias[ , 2]
+```
+
+
+## 2.3 Listas
+
+Uma outra estrutura de dados importante no R é a **list**. Ao contrário de um vetor, nela podemos guardar uma coleção de objetos de tipos distintos. As listas são úteis quando precisamos armazenar vários valores em um mesmo objeto, de forma a criar uma estrutura conhecida para recuperar a informação.
+
+Suponha por exemplo que estamos montando um banco de dados de 3 pesquisadores que participaram da produção de um artigo. Para cada pesquisador devemos anotar o nome, a idade, a instituição à qual ele pertence e seu cargo na instituição. Podemos representar cada uma dessas pessoas na forma de uma lista:
+
+```{r}
+
+criar_pesquisador = function (nome, idade, instituicao, cargo) {
+  return (
+    list(
+      Nome = nome,
+      Idade = idade,
+      Instituicao = instituicao,
+      Cargo = cargo
+    )
+  )
+}
+
+pesquisador_1 = criar_pesquisador('José Maria', 30, 'UFG', 'Professor')
+pesquisador_2 = criar_pesquisador('Maria José', 38, 'UFG', 'Coordenador')
+pesquisador_3 = criar_pesquisador('Wesllyson Augusto', 25, 'UFMG', 'Aluno')
+
+```
+
+```{r}
+print(pesquisador_1)
+```
+
+```{r}
+print(pesquisador_2)
+```
+
+```{r}
+print(pesquisador_3)
+```
+
+Para obter o valor armazenado em algum componente da lista, podemos utilizar duas notações diferentes. A primeira é indicando a posição do componente. A segunda é indicando o nome do componente. Observe abaixo:
+
+```{r}
+pesquisador_1[[1]]
+```
+
+```{r}
+pesquisador_1[['Nome']]
+```
+
+Para listas é possível utilizar ainda o operador **$**, e informar o nome do componente diretamente:
+
+```{r}
+pesquisador_1$Nome
+```
+
+
+Podemos ainda formar uma coleção de pesquisadores, de forma que seja possível percorrer essa coleção utilizando as estruturas de controle. Uma das formas de se fazer isso é criando uma lista na qual cada elemento é um dos objetos que representa um pesquisador:
+
+```{r}
+
+lista.pesquisadores = list(pesquisador_1, pesquisador_2, pesquisador_3)
+
+print(lista.pesquisadores)
+
+```
+
+```{r}
+
+for (i in 1:length(lista.pesquisadores)) {
+  print(paste('--', 'Exibindo os dados do pesquisador', i, '--'))
+  
+  
+  nome = lista.pesquisadores[[i]]['Nome']
+  idade = lista.pesquisadores[[i]]['Idade']
+  instituicao = lista.pesquisadores[[i]]['Instituicao']
+  cargo = lista.pesquisadores[[i]]['Cargo']
+  
+  dados_pesquisador = paste('Nome: ', nome, 
+                            'Idade: ', idade, 
+                            'Instituicao: ', instituicao, 
+                            'Cargo: ', cargo)
+  
+  print(dados_pesquisador)
+}
+
+```
+
+
+## 2.4 Data Frames
+
+Uma forma alternativa de representar os pesquisadores do exemplo anterior é através de uma tabela contendo uma linha para cada pesquisador e uma coluna para cada característica que estamos observando (Nome, Idade, Instituicao e Cargo). Ao contrário de uma matriz, onde todos os valores devem ser do mesmo tipo, em um **data.frame** cada coluna pode ter um tipo próprio.
+
+A representação dos pesquisadores em um data.frame pode ser feita da seguinte forma:
+
+```{r}
+
+getNomePesquisador = function (pesquisador) { 
+  return(pesquisador$Nome)
+}
+
+getIdadePesquisador = function (pesquisador) { 
+  return(pesquisador$Idade)
+}
+
+getInstituicaoPesquisador = function (pesquisador) { 
+  return(pesquisador$Instituicao)
+}
+
+getCargoPesquisador = function (pesquisador) { 
+  return(pesquisador$Cargo)
+}
+
+
+vector.nomes = sapply(lista.pesquisadores, getNomePesquisador)
+vector.idades = sapply(lista.pesquisadores, getIdadePesquisador)
+vector.instituicao = sapply(lista.pesquisadores, getInstituicaoPesquisador)
+vector.cargo = sapply(lista.pesquisadores, getCargoPesquisador)
+
+df.pesquisadores = data.frame(
+  Nome = vector.nomes,
+  Idade = vector.idades,
+  Instituicao = vector.instituicao,
+  Cargo = vector.cargo
+)
+
+print(df.pesquisadores)
+
+```
+
+Da mesma forma que matrizes, data frames são estruturas tabulares. Portanto é possível realizar o slicing de forma a obter apenas determinadas linhas e colunas que desejarmos:
+
+```{r}
+# duas primeiras linhas, todas as colunas
+df.pesquisadores[c(1,2), ]
+```
+
+```{r}
+# todas as linhas, primeira coluna
+df.pesquisadores[ , 1]
+```
+
+```{r}
+# todas as linhas, coluna 'Cargo'
+df.pesquisadores[ , 'Cargo']
+```
+
+
+Outra propriedade importante de data frames é a de que eles são listas de colunas, isto é, um data frame é uma lista em que cada componente representa uma coluna de uma matriz, sendo que todos as colunas são vetores de mesmo tamanho e dentro de cada colunas todos os valores são do mesmo tipo.
+
+Por se tratar de uma lista, podemos obter uma coluna do data frame utilizando a seguinte notação:
+
+```{r}
+df.pesquisadores$Nome
+```
+
+
+
+## 2.5 Fatores
+
+Outro tipo de objeto muito utilizado na linguagem R é o **factor**, que assim como o **vector** representa uma coleção unidimensional de valores. Todavia todos os objetos de um fator pertencem a um conjunto conhecido de valores permitidos. Esta situação é frequente na experimentação científica, uma vez que geralmente os tratamentos dos experimentos são elaborados de forma **fatorial**, isto é, as amostras são divididas em grupos e em cada grupo um nível de fator do tratamento é utilizado.
+
+Utilizemos novamente o exemplo do crescimento de bactérias. Relembre os dados utilizados:
+
+```{r}
+matrix.bacterias
+```
+
+Cada placa foi cultivada em uma temperatura constante e temos três placas para cada fator de temperatura. Neste caso os valores da coluna *Temperatura* pertencem a um conjunto conhecido de valores:  25, 30 e 35 ºC.
+Estes valores são chamados de **níveis de tratamento** dentro do **fator *Temperatura* **.
+
+Para criar um objeto que represente essa coleção de temperaturas, utilizamos a função *factor*:
+
+```{r}
+
+vector.temperaturas = matrix.bacterias[ , 1]
+
+niveis.temperatura = c(25, 30, 35)
+
+factor.temperaturas = factor(vector.temperaturas,
+                             levels = niveis.temperatura)
+```
+
+
+```{r}
+#Vetor original
+print(vector.temperaturas)
+```
+
+```{r}
+#Fator de Temperaturas:
+print(factor.temperaturas)
+```
+
+
+
+Caso queiramos armazenar o fator de temperaturas e o vetor de aumentos relativos em um mesmo objeto, precisamos utilizar um **data.frame**, pois agora cada coluna é de um tipo diferente. A coluna *Temperatura* será um fator e a coluna *AumentoRelativo* continuará sendo um vetor numérico.
+
+```{r}
+df.bacterias = data.frame(
+  Temperatura = factor.temperaturas,
+  AumentoRelativo = matrix.bacterias[, 2]
+)
+
+print(df.bacterias)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 3 Estruturas de controle
+
+
+Para descrever o comportamento que esperado pelo computador 
+
+
+## 3.1 Estruturas de repetição
+
+É possível utilizar vetores para repetir alguma tarefa que deva ser executada de forma repetitiva.
+Suponha por exemplo que desejamos imprimir alguns valores de temperaturas em graus Celsius convertidas para Kelvin.
+
+
+Para isso precisamos de três elementos:
+*    A estrutura de dados contendo as temperaturas.
+*    Um método que converte temperaturas em graus Celsius para Kelvin.
+*    Uma estrutura de repetição que aplique o método de conversão em cada temperatura.
+
+
+Para isso podemos utilizar a estrutura de controle **for**:
+
+```{r}
+# Estrutura de dados
+temperaturas = c(36.5, 36.3, 39, 0, 100)
+
+# Método de conversão
+converter_temperatura = function(temperatura_celsius) {
+  return(temperatura_celsius + 273.15)
+}
+
+# Estrutura de repetição 1
+for ( temperatura in temperaturas ) {
+  print(converter_temperatura(temperatura))
+}
+
+```
+
+Poderíamos ainda desejar um novo vetor, contendo todas as temperaturas convertidas. Isto pode ser realizado através da função **sapply**, que aplica uma função a cada elemento de uma coleção e retorna outra coleção com os resultados
+
+```{r}
+# Estrututra de repetição 2
+sapply(temperaturas, converter_temperatura)
+```
+
+## 3.2 Estruturas condicionais
+
+Outra tarefa comum na lógica de programação é separar diferentes trechos do programa de forma que cada trecho será executado a depender de uma condição.
+
+Por exemplo, considere o seguinte vetor de temperaturas em graus Celsius:
+
+```{r}
+temperaturas = c(-300, 0, 300)
+```
+
+Suponha que desejamos iterar pelos elementos desse vetor, convertendo a temperatura em Kelvin e verificando se essa é uma temperatura válida. A escala Kelvin é conhecida como escala absoluta de temperatura, e o valor mínimio de uma temperatura nessa escala é 0, portanto valores negativos não são válidos.
+
+```{r}
+# Estrutura de repetição
+for (temperatura in temperaturas) {
+  temperatura_kelvin = converter_temperatura(temperatura)
+  
+  print(paste('Analisando a temperatura', temperatura, ' ºC'))
+  
+  print(paste('Valor em Kelvin:', temperatura_kelvin, ' K'))
+  
+  
+  # Estrutura condicional
+  if (temperatura_kelvin < 0) {
+    print(paste('A temperatura', temperatura, ' não é um valor válido'))
+  }
+}
+```
+
+
+
+
+# 4 Exportação e Importação de dados
+
+Para que seja possível compartilhar e transportar os dados utilizados em nossos programas, é necesário uma forma de escrever estes dados no formato de arquivos. Um dos formatos mais utilizados para escrita de dados tabulares é o **csv**. Neste formato os dados são gravados de forma que cada linha de eum arquivo de texto represente uma linha da tabela, e as células de cada linha são separadas por vírgula.
+
+Para salvar uma matriz ou um data.frame em um arquivo **csv**, podemos utilizar a função **write.csv**:
+
+```{r}
+
+write.csv(df.bacterias, file = 'bacterias.csv')
+
+```
+
+
+
+Caso queiramos importar dados que tenham sido salvos no formato **csv**, podemos utilizar a função **read.csv**:
+
+```{r}
+
+novo.df.bacterias = read.csv('bacterias.csv')
+print(novo.df.bacterias)
+
+```
+
+
+
+
+# 5 Exercícios:
+
+1. Criação de objetos
+
+    1.1. Escolha 10 alunos dessa turma e crie dois vetores para armazenar o sexo e a idade de cada um deles. Para representar o sexo, utilize o valor 0 caso o aluno seja do sexo masculino e o valor 1 caso o aluno seja do sexo feminino. Lembre-se, para combinar objetos em um vetor, utilizamos a função **c**.
+
+    1.2. Crie uma matriz contendo os dados destes dois vetores. Esta matriz de ter 10 linhas (uma para cada aluno) e duas colunas (uma para a idade e outra para o sexo).
+
+    1.3. Crie outra matriz contendo estes dados, porém agora ela deve ter duas linhas (uma para a idade e outra para o sexo) e 10 colunas (uma para cada aluno).
+
+2. Declaração de funções
+
+    2.1. Declare uma função que recebe um único argumento (sexo) e retorna a palavra *'Masculino'*, caso este argumento seja 0, e retorna a palavra *'Feminino'*, caso contrário.
+
+    2.2. Utilize esta função para criar um vetor de palavras representando o sexo dos 10 alunos selecionados. Utilizando este vetor crie um fator com os dados.
+
+    2.3. Declare um data.frame de duas colunas, uma com o fator de sexo e outra com a idade dos alunos.
+
+3. Exportação de Dados
+
+    3.1. Salve o data.frame criado anteriormente no formato csv.
+
+
+
+
+
+
