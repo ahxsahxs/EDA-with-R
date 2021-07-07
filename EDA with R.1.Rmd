@@ -216,6 +216,20 @@ colnames(matrix.bacterias) = c('Temperatura', 'AumentoRelativo')
 print(matrix.bacterias)
 ```
 
+Outra forma de preencher a matriz seria informando os dados por coluna, ao invés de informar as linhas, isso pode ser feito da seguinte forma:
+
+```{r}
+dados.bacterias.2 = c(25, 25, 25, 30, 30, 30, 35, 35, 35,
+                      1, 1.1, 1.1, 1.4, 1.5, 1.8, 1.7, 1.8, 1.9)
+
+matrix.bacterias.2 = matrix(dados.bacterias.2, ncol = 2, byrow = FALSE)
+
+colnames(matrix.bacterias.2) = c('Temperatura', 'AumentoRelativo')
+
+print(matrix.bacterias.2)
+```
+
+
 
 Para qualquer tipo de dado tabular no R (matrizes e data frames) podemos fazer uma operação de *slicing* no objeto, selecionando apenas linhas ou colunas que sejam de nosso interesse. Observe alguns exemplos:
 
