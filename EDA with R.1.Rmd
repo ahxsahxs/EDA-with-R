@@ -9,17 +9,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-# 1 Introdução
+# 1. Introdução
 
 Abordaremos os princípios de lógica de programação e a preparação do ambiente para desenvolvimento em R. As principais classes de objetos e estruturas de controle serão apresentadas aqui.
 
-# 1.1 Lógica de programação
+## 1.1. Lógica de programação
 
 O método padrão utilizado para desenvolvimento de programas é a criação de documentos de texto, escritos em linguagens próprias para tal fim. As primeiras linguagens de programação datam da década de 1950 e funcionavam através de equipamentos eletrônicos que utilizavam tecnologia bem distinta das atuais, e de lá para cá, também mudaram os fins para os quais novas linguagens foram escritas.
 
 R é um projeto de software livre, que foi primeiramente anunciado em 1993 e tem se tornado uma ferramenta valiosa para tarefas que envolvem o tratamento e a interpretação de dados, sendo comumente adotado em empresas e instituições que trabalham com pesquisa.
 
-## 1.2 Scripting
+## 1.2. Scripting
 
 R é uma linguagem de script interpretada. Isto significa que os documentos são escritos na forma de um **script** e que o processamento é feito através de uma interpretação direta do conteúdo do documento.
 
@@ -39,7 +39,7 @@ O código executado é composto de dois dois componentes:
 
 
 
-## 1.3 Objetos
+## 1.3. Objetos
 
 Para representar números, textos, datas, condições e até mesmo pessoas utilizamos um conceito abstrato na lógica de programação: o **objeto**.
 
@@ -85,7 +85,7 @@ class(2 + 5i)
 
 
 
-## 1.4 Solução de problemas através da linguagem
+## 1.4. Solução de problemas através da linguagem
 
 O principal objetivo da computação é permitir o tratamento de informações de uma maneira sistemática, e mais ainda, programática. Isto significa que criamos **programas**, isto é, instruções escritas e organizadas de forma que um computador seja capaz de intepretar cada instrução fornecida.
 
@@ -149,7 +149,7 @@ Os scripts são compostos basicamente por três elementos:
 
 
 
-# 2 Estruturas de Dados
+# 2. Estruturas de Dados
 
 
 Para facilitar o tratamento das informações que dispomos, representamos os dados de forma organizada, através de estruturas que serão úteis na resolução de diversos problemas.
@@ -167,7 +167,7 @@ As principais estruturas que utilizaremos durante este curso são:
 Cada um destes tipos funciona como um agrupador para coleções de objetos de tipos primitivos.
 
 
-## 2.1 Vetores
+## 2.1. Vetores
 O **vector** é a estrutura base dos objetos em R. Ele representa um lista qualquer de valores do mesmo tipo, por exemplo:
 
 * uma lista contendo a quantidade de erros encontrados em 4 textos;
@@ -186,7 +186,7 @@ c('Arroz', 'Feijão', 'Abacate')
 Cada um destes vetores é formado por uma coleção de objetos mais simples. No primeiro caso por números e no segundo por cadeias de caracteres.
 
 
-## 2.2 Matrizes
+## 2.2. Matrizes
 
 Um dos princípios da experimentação científica é da repetibilidade, segundo o qual devemos orientar nossos estudos pela repetição sucessiva de experimentos e observar as características que são de nosso interesse.
 
@@ -194,7 +194,7 @@ Imagine por exemplo um experimento no qual desejamos investigar o efeito que a t
 
 O experimento foi conduzido em três temperaturas distintas, 25 ºC, 30 ºC e 35 ºC. Para cada temperatura 3 placas foram preparadas com populações de mesmo tamanho da bactéria, e após uma hora foi registrado o aumento relativo da população:
 
-$$AumentoRelativo = {{Populacao \; inicial} \over {Populacao \; final}}$$
+$$AumentoRelativo = {{Populacao \; final} \over {Populacao \; inicial}}$$
 
 Para cada placa foi registrada a temperatura na qual o experimento ocorreu e o aumento relativo da população de bactérias após uma hora. Os dados obtidos são declarados a seguir:
 
@@ -246,7 +246,7 @@ matrix.bacterias[ , 2]
 ```
 
 
-## 2.3 Listas
+## 2.3. Listas
 
 Uma outra estrutura de dados importante no R é a **list**. Ao contrário de um vetor, nela podemos guardar uma coleção de objetos de tipos distintos. As listas são úteis quando precisamos armazenar vários valores em um mesmo objeto, de forma a criar uma estrutura conhecida para recuperar a informação.
 
@@ -332,7 +332,7 @@ for (i in 1:length(lista.pesquisadores)) {
 ```
 
 
-## 2.4 Data Frames
+## 2.4. Data Frames
 
 Uma forma alternativa de representar os pesquisadores do exemplo anterior é através de uma tabela contendo uma linha para cada pesquisador e uma coluna para cada característica que estamos observando (Nome, Idade, Instituicao e Cargo). Ao contrário de uma matriz, onde todos os valores devem ser do mesmo tipo, em um **data.frame** cada coluna pode ter um tipo próprio.
 
@@ -401,7 +401,7 @@ df.pesquisadores$Nome
 
 
 
-## 2.5 Fatores
+## 2.5. Fatores
 
 Outro tipo de objeto muito utilizado na linguagem R é o **factor**, que assim como o **vector** representa uma coleção unidimensional de valores. Todavia todos os objetos de um fator pertencem a um conjunto conhecido de valores permitidos. Esta situação é frequente na experimentação científica, uma vez que geralmente os tratamentos dos experimentos são elaborados de forma **fatorial**, isto é, as amostras são divididas em grupos e em cada grupo um nível de fator do tratamento é utilizado.
 
@@ -472,13 +472,13 @@ print(df.bacterias)
 
 
 
-# 3 Estruturas de controle
+# 3. Estruturas de controle
 
 
 Para descrever o comportamento que esperado pelo computador 
 
 
-## 3.1 Estruturas de repetição
+## 3.1. Estruturas de repetição
 
 É possível utilizar vetores para repetir alguma tarefa que deva ser executada de forma repetitiva.
 Suponha por exemplo que desejamos imprimir alguns valores de temperaturas em graus Celsius convertidas para Kelvin.
@@ -547,7 +547,7 @@ for (temperatura in temperaturas) {
 
 
 
-# 4 Exportação e Importação de dados
+# 4. Exportação e Importação de dados
 
 Para que seja possível compartilhar e transportar os dados utilizados em nossos programas, é necesário uma forma de escrever estes dados no formato de arquivos. Um dos formatos mais utilizados para escrita de dados tabulares é o **csv**. Neste formato os dados são gravados de forma que cada linha de eum arquivo de texto represente uma linha da tabela, e as células de cada linha são separadas por vírgula.
 
@@ -573,7 +573,7 @@ print(novo.df.bacterias)
 
 
 
-# 5 Exercícios:
+# 5. Exercícios:
 
 1. Criação de objetos
 
