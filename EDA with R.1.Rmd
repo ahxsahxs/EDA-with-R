@@ -593,7 +593,7 @@ print(novo.df.bacterias)
 
     1.1. Escolha 10 alunos dessa turma e crie dois vetores para armazenar o sexo e a idade de cada um deles. Para representar o sexo, utilize o valor 0 caso o aluno seja do sexo masculino e o valor 1 caso o aluno seja do sexo feminino. Lembre-se, para combinar objetos em um vetor, utilizamos a função **c**.
 
-    1.2. Crie uma matriz contendo os dados destes dois vetores. Esta matriz de ter 10 linhas (uma para cada aluno) e duas colunas (uma para a idade e outra para o sexo).
+    1.2. Crie uma matriz contendo os dados destes dois vetores. Esta matriz deve ter 10 linhas (uma para cada aluno) e duas colunas (uma para a idade e outra para o sexo).
 
     1.3. Crie outra matriz contendo estes dados, porém agora ela deve ter duas linhas (uma para a idade e outra para o sexo) e 10 colunas (uma para cada aluno).
 

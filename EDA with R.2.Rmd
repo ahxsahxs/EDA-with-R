@@ -1,5 +1,5 @@
 ---
-title: "EDA with R.2"
+title: "EDA with R - Segunda parte"
 author: "Antonio Henrique"
 date: "01/07/2021"
 output: html_document
@@ -137,8 +137,14 @@ Os dados são compostos de 60 observações, uma para cada porquinho-da-índia, 
 ```{r}
 # Importação dos dados
 data("ToothGrowth")
+
+# Interrogação é para ver a documentação
 ?ToothGrowth
+
+?list
+
 print(ToothGrowth)
+
 # Experimente: View(ToothGrowth)
 ```
 
@@ -173,8 +179,8 @@ Para os dados utilizados, podemos construir uma região centrada na média e cuj
 
 ```{r}
 
-intervalo.1.minimo = media - 1 * desvio_padrao
-intervalo.1.maximo = media + 1 * desvio_padrao
+intervalo.1.minimo = media - 3 * desvio_padrao
+intervalo.1.maximo = media + 3 * desvio_padrao
 
 intervalo.1 = c(intervalo.1.minimo, intervalo.1.maximo)
 names(intervalo.1) = c('minimo', 'maximo')
@@ -189,7 +195,8 @@ Verifiquemos essa informação visualmente:
 
 plot(Comprimento, 
      xlab = 'Porquinho-da-índia',
-     ylab = 'Comprimento do odontoblasto')
+     ylab = 'Comprimento do odontoblasto',
+     ylim = c(-5, 45))
 abline(h = media, col = 'blue')
 abline(h = intervalo.1['minimo'], col = 'red')
 abline(h = intervalo.1['maximo'], col = 'red')
@@ -246,7 +253,7 @@ print(intervalo.2)
 plot(Comprimento, 
      xlab = 'Porquinho-da-índia',
      ylab = 'Comprimento do odontoblasto')
-abline(h = media, col = 'blue')
+abline(h = mediana, col = 'blue')
 abline(h = intervalo.2['minimo'], col = 'red')
 abline(h = intervalo.2['maximo'], col = 'red')
 
@@ -355,3 +362,4 @@ barplot(medias_tratamentos,
    2.2. Considerando que a variável explicativa é *Time* e a variável resposta é *weight*, faça o diagrama de boxplot para a variável resposta e faça também o diagrama de dispersão conjunta da variável resposta em relação a variável explicativa.
    
    2.3. Considerando agora que a variável explicativa é a *Diet*, obtenha o valor médio dos pesos das galinhas para cada nível de tratamento. Faça o gráfico de barras do peso médio em cada dieta.
+   

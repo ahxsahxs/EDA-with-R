@@ -1,0 +1,417 @@
+---
+title: "EDA with R - Terceira parte"
+author: "Antonio Henrique"
+date: "01/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Visualização de dados com a ggplot2
+
+No ambiente R dispomos de bibliotecas criadas por outros programadores para facilitar o nosso trabalho. Estas bibliotecas são desenvolvidas de forma que possam ser utilizadas por diferentes pessoas que possuem um problema em comum.
+
+A biblioteca com o maior número de downloads no CRAN (Comprehensive R Archive Network) é a ***ggplot2***, ela possui uma grande quantidade de funções que nos ajudarão a criar visualizações mais intuitivas e esteticamente padronizadas.
+
+A filosofia que orienta o desenvolvimento da biblioteca é chamada de Gramática de Gráficos e  considera que cada visualização é composta por três elementos:
+
+* Os dados;
+* A estética (relação entre as variáveis);
+* Detalhes adicionais que facilitem a leitura.
+
+Para trabalhar estes conceitos vamos utilizar o dataset **iris**, disponível no pacote ***datasets***. Para importar os dados utilize o comando abaixo:
+
+```{r}
+# ?iris
+data(iris)
+summary(iris)
+```
+
+Este dataset é composto de 150 observações anatômicas de flores de íris, sendo que cada observação informa a espécie do indivíduo, além das larguras e comprimentos da sépala e da pétala.
+
+## 1.1. Problema de pesquisa
+
+Ao todo temos 4 variáveis numérica e uma variável categórica. Desejamos responder duas questões:
+
+1. As características anatômicas das flores de íris são iguais para as três espécies em estudo (setosa, versicolor e virginica)?
+
+2. Dado as características anatômicas de uma flor de íris, é possível dizer à qual espécie ela pertence?
+
+
+Para realizar uma análise estatística desenvolvemos um modelo que explique o fenômeno sendo observado e em seguida realizamos uma validação desse modelo. Uma forma de fazer essa validação é separando nosso dataset em duas partes, uma que será utilizada na construção do modelo e outra que será utilizada na validação.
+
+
+## 1.2. Separação dos datasets
+
+Abaixo definimos dois objetos, um contendo os dados de treino e outro para testes. Estes objetos serão utilizados posteriormente para análise estatística dos dados.
+
+```{r}
+
+set.seed(42)
+
+extrair_datasets = function (especie) {
+  
+  dados.especie = subset(iris, Species == especie)
+  
+  tamanho.amostra = nrow(dados.especie)
+  tamanho.treino = floor(tamanho.amostra * 0.75) 
+
+  selecao.treino = sample(tamanho.amostra, size = tamanho.treino)
+  selecao.teste = which(!(1:tamanho.amostra %in% selecao.treino))
+  
+  return (
+    list(
+      Treino = dados.especie[selecao.treino, ],
+      Teste = dados.especie[selecao.teste, ]
+    )
+  )
+}
+
+datasets.especie = lapply(levels(iris$Species), extrair_datasets)
+
+
+iris.treino = data.frame()
+iris.teste = data.frame()
+
+for (dataset in datasets.especie) {
+  iris.treino = rbind(iris.treino, dataset$Treino)
+  iris.teste = rbind(iris.treino, dataset$Teste)
+}
+
+
+```
+
+
+# 1.3. Pivotagem dos dados
+
+Para trabalhar os dados na biblioteca ggplot2, é comum representar a informação em um formato tabular onde várias variáveis são agrupadas em uma mesma coluna, e outra coluna é criada para dizer de qual variável aquele valor provém.
+
+Esse tipo de **pivotagem** pode ser feita com as funções da biblioteca ***tidyverse***. Façamos a instalação e a importação das bibliotecas necessárias:
+
+```{r}
+# install.packages('tidyverse')
+library(tidyverse)
+library(ggplot2)
+```
+
+Em seguida vamos criar um data.frame no formato longo, utilizando a função **pivot_longer**:
+
+
+```{r}
+
+iris.long = pivot_longer(data = iris,
+             cols = c(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width),
+             names_to = 'Variavel',
+             values_to = 'Medida')
+
+GetEstruturaVariavel = function (variavel) {
+  
+  partes_variavel = strsplit(variavel, '.', TRUE)[[1]]
+  
+  if (partes_variavel[1] == 'Petal') {
+    return ('Pétala')
+  } else {
+    return ('Sépala')
+  }
+}
+
+GetTipoMedidaVariavel = function (variavel) {
+  
+  partes_variavel = strsplit(variavel, '.', TRUE)[[1]]
+  
+  if (partes_variavel[2] == 'Length') {
+    return ('Comprimento')
+  } else {
+    return ('Largura')
+  }
+}
+
+
+iris.long$Estrutura = sapply(iris.long$Variavel, GetEstruturaVariavel)
+iris.long$Estrutura = factor(iris.long$Estrutura)
+
+iris.long$TipoMedida = sapply(iris.long$Variavel, GetTipoMedidaVariavel)
+iris.long$TipoMedida = factor(iris.long$TipoMedida)
+
+
+iris.long$Variavel = NULL
+
+iris.long
+```
+
+Nosso novo data frame é composto de 600 linhas e 4 colunas. Cada linha representa uma medição única realizada durante o experimento, e está identificada para cada medição qual foi a espécie, qual estrutura da flor foi medida e se foi mensurado o comprimento ou a largura da estrutura.
+
+
+# 2. Modelagem do primeiro problema
+
+A primeira pergunta levantada pode ser respondida verificando se o valor de cada variável é igual ou diferente para cada espécie, e uma forma de verificar isso é analisar a dispersão de cada variável levando em consideração a espécie.
+
+
+## 2.1. Comparação das medidas por espécie
+
+Visualizemos isso através do boxplot das medidas, utilizando a espécie como variável explicativa e realizando uma separação das medidas das pétalas e das sépalas.
+
+```{r}
+
+ggplot(iris.long, aes(x = Species, y = Medida, colour = TipoMedida)) +
+  geom_boxplot() +
+  facet_wrap(~ Estrutura) +
+  xlab('Espécie') +
+  ylab('Medida (em centímetros)') +
+  labs(main = 'Dispersão das medidas anatômicas de flores de íris',
+       subtitle = 'Observações do comprimento e largura da pétala e sépala de 150 flores')
+  
+```
+
+Poderíamos ainda dividir os gráficos de forma a separar as variáveis relacionadas ao comprimento daquelas relacionadas a largura:
+
+```{r}
+ggplot(iris.long, aes(x = Species, y = Medida, colour = TipoMedida)) +
+  geom_boxplot() +
+  facet_grid(TipoMedida ~ Estrutura) +
+  xlab('Espécie') +
+  ylab('Medida (em centímetros)') +
+  labs(main = 'Dispersão das medidas anatômicas de flores de íris',
+       subtitle = 'Observações do comprimento e largura da pétala e sépala de 150 flores')
+```
+
+Observemos inicialmente as variáveis relacionadas à pétala. É notável que existe uma diferença entre as espécies, sendo a virginica a flor de maiores proporções. Repare que os intervalos delimitados pelos diagramas de cada espécie não tem sobreposição, isto é, quando olhamos uma determinada região do comprimento ou da largura da pétala de uma flor há pouco confundimento entre as espécies.
+
+No que se refere as medidas da sépala, o mesmo não ocorre. As medidas de indivíduos de espécies diferentes são bem próximas entre si.
+
+
+## 2.2. Modelagem estatística do problema
+
+Para verificar se alguma medida específica varia de acordo com a espécie, podemos utilizar o modelo de regressão linear codificando a variável **Espécie** como um conjunto de duas variáveis indicadoras (*dummy vars*). Este modelo é implementado na função **lm** do R.
+
+```{r}
+
+modelo.linear.sepal.lenght = lm(Sepal.Length ~ Species, iris.treino)
+modelo.linear.sepal.width = lm(Sepal.Width ~ Species, iris.treino)
+modelo.linear.petal.lenght = lm(Petal.Length ~ Species, iris.treino)
+modelo.linear.petal.width = lm(Petal.Width ~ Species, iris.treino)
+
+```
+
+Para visualizar um resumo dos resultados obtidos pela estimação do modelo utilize a função **summary**. A interpretação da saída se dá através da análise da estimativa dos coeficientes do modelo. Observe que para os quatro modelos todos os coeficientes foram estimados com valores significativamente diferentes de 0. Isto é um indício de que todas as 4 medidas coletadas são influenciadas pela espécie da flor.
+
+```{r}
+summary(modelo.linear.sepal.lenght)
+# summary(modelo.linear.sepal.width)
+# summary(modelo.linear.petal.lenght)
+# summary(modelo.linear.petal.width)
+```
+
+A avaliação de um modelo estatístico é em geral feita através da análise de resíduos. Um das principais pressuposições assumidas para o modelo é de que os resíduos estão simetricamente distribuídos em torno do valor zero e não possuem dependência entre si. Alguns diagramas de análise residual são obtidos através da função **plot** passando como argumento o próprio modelo ajustado.
+
+```{r}
+
+cores.individuos = c('red', 'blue', 'green')[unclass(iris$Species)]
+
+plot(modelo.linear.sepal.lenght,
+     col = cores.individuos)
+```
+
+
+
+# 3. Modelagem do segundo problema
+
+Para responder a segunda pergunta devemos obter um modelo que diferencie a espécie do indivíduo de acordo com suas medidas. Ao estimar um modelo de regressão é comum primeiro verificarmos as relações entre todas as variáveis, com o intuito de descobrir possíveis medidas de correlação entre os dados.
+
+## 3.1. Análise das correlações entre as variáveis
+
+Uma maneira de averiguar essas medidas de correlação é utilizando um gráfico composto de vários diagramas de dispersão, um para cada par de variáveis. Em geral este gráfico é chamado de diagrama de dispersão pareado. A biblioteca padrão ***graphics*** dispõe da função **pairs** para essa operação:
+
+```{r fig.height=6, fig.width=10}
+
+
+pairs(iris, pch = 21, col = cores.individuos,
+      main = 'Diagramas de dispersão para as variáveis em estudo')
+
+```
+
+
+Para fazer este diagrama utilizando a biblioteca ***ggplot2*** necessitamos aplicar várias transformações nos dados, o que aumenta consideravelmente a complexidade de nosso código. Todavia existem soluções disponíveis em outras bibliotecas do CRAN, que extendem as funcionalidades da biblioteca ***ggplot2***. Abaixo utilizamos a função **ggpairs** da biblioteca ***GGally*** para gerar o diagrama de dispersão pareado:
+
+```{r fig.height=6, fig.width=10}
+
+# install.packages('GGally')
+library(GGally)
+
+ggpairs(iris, 
+        mapping = aes(colour = Species),
+        title = 'Diagramas de dispersão para as variáveis em estudo')
+```
+
+Observe como os grupos são visivelmente distintos na variável **Petal.Width**. Esta variável pode ser utilizada para diferenciar as espécies com pouco confundimento, afinal o valor médio da largura da pétala da espécie *setosa* é bem menor do que as demais espécies. Há ainda uma pequena região de confundimento entre as espécies *versicolor* e *virginica*.
+
+Se observarmos a variável **Sepal.Width** acontece o caso contrário. O valor médio da largura da sépala é bem próximo para as três espécies, e apresenta grande variabilidade. De forma geral podemos notar que a espécie *setosa* é a de menor proporções entre as três, enquanto a *virginica* apresenta medidas maiores do que as demais. Além disso é notamos também que as medidas da espécie *versicolor* estão mais próximas da espécie *virginica* do que da espécie *setosa*.
+
+
+## 3.2. Modelagem estatística do problema
+
+Uma forma de modelar a segunda questão é utilizando uma regressão linear onde a variável resposta é a espécie (categórica) e a variável explicativa é alguma das medidas de largura ou comprimento (contínua). Para esse caso de regressão um modelo adequado é o modelo de regressão logística, que se baseia no modelo de regressão linear, mas utiliza uma função de ligação específica para modelar as chances de se observar cada espécie.
+
+Para mais informações sobre execute o comando ***?glm*** e consulte algum material de leitura sobre modelos lineares generalizados.
+
+```{r}
+
+modelo.logistico.sepal.lenght = glm(Species ~ Sepal.Length,
+                                    data = iris, family = binomial(link = 'logit'))
+modelo.logistico.sepal.width = glm(Species ~ Sepal.Width,
+                                   data = iris, family = binomial(link = 'logit'))
+
+```
+
+Resumo do ajuste do modelo:
+
+```{r}
+summary(modelo.logistico.sepal.lenght)
+```
+
+Análise de resíduos:
+
+```{r}
+plot(modelo.logistico.sepal.lenght,
+     col = cores.individuos)
+```
+
+
+
+# 4. Avaliação dos modelos
+
+A análise de resíduos do modelo é necessária para o fim de verificar se os pressupostos assumidos para realizar a estimação foram atendidos. A interpretação das estatísticas relativas a qualidade do ajuste (como o p-valor) demanda um bom conhecimento do teste que está sendo realizado e dos fundamentos matemáticos da técnica, portanto é um assunto fora do escopo deste curso.
+
+Contudo, para modelos lineares mais simples, como estes que foram utilizados aqui, podemos citar os principais pressupostos e orientar uma maneira de verificá-los através dos gráficos gerados pela função **plot**.
+
+## 4.1. Pressupostos do modelo linear simples
+
+Utilizando a função **lm** assumimos que o modelo estimado terá as seguintes propriedades:
+
+* Existe uma relação linear entre a variável resposta e as variáveis explicativas.
+
+  + Esta propriedade é de certa forma subjetiva e geralmente é verificada observando o diagrama de dispersão da variável resposta em relação a cada variável explicativa. Uma medida da força da relação linear entre duas variáveis é dada pelo Coeficiente de Correlação Linear de Pearson, que pode ser calculado através da função **cor** e é exibido também no gráfico gerado pela função **ggpairs**.
+
+* Os indivíduos são independentes entre si, isto é, os valores observados para um indivíduo não dependem dos valores observados de outro indivíduo.
+  
+  + A independência dos indivíduos é verificada através dos vários diagramas de dispersão dos resíduos. Cada diagrama deste evidencia a relação entre os erros do modelo e as variáveis utilizadas. De forma geral, procuramos obter um modelo no qual não haja correlação entre os resíduos e a variável resposta, e nem correlação entre os resíduos e as variáveis explicativas.
+
+* Os resíduos do modelo ($\text{valor predito} - \text{valor observado}$) tem média zero, variância limitada e seguem uma distribuição normal.
+
+  + A adequação dos resíduos a uma distribuição normal pode ser visualizada através de um diagrama chamado QQ-Plot (Quantile-Quantile Plot, ou Diagrama Quantil-Quantil), que compara os quantis amostrais dos resíduos com os quantis teóricos de uma distribuição normal. Neste diagrama esperamos que os resíduos estejam distribuídos de forma simétrica e próxima de uma reta.
+
+
+## 4.2. Validação cruzada
+
+Já foi mostrado que é possível gerar os gráficos de análise de resíduos através da função **plot**, todavia é de bom senso não basear uma avaliação apenas nos resíduos obtidos com os dados amostrais utilizados na estimação do modelo. Isto porque o modelo estimado pode possuir bom desempenho para os dados amostrais, mas falhar quando dados mais heterogêneos sejam utilizados.
+
+Portanto para uma melhor avaliação da qualidade do modelo utilizamos o dataset de testes e verificamos se os resíduos obtidos pela aplicação do modelo naqueles indivíduos também se comportam de acordo os pressupostos indicados anteriormente.
+
+
+
+Vamos fazer a avaliação do modelo salvo no objeto ***modelo.linear.sepal.lenght***. Para tal criamos um novo data.frame que contém as variáveis originais do dataset de teste e mais uma coluna para os resíduos. Este data.frame será utilizado para gerar os diagramas de dispersão e QQ-Plot dos resíduos coma biblioteca ***ggplot2***.
+
+```{r}
+
+df.avaliacao.sepal.length = data.frame(iris.teste)
+
+df.avaliacao.sepal.length$Predito = predict(modelo.linear.sepal.lenght, newdata = iris.teste)
+
+df.avaliacao.sepal.length$Residuo = with(df.avaliacao.sepal.length, Predito - Sepal.Length)
+
+summary(df.avaliacao.sepal.length)
+
+```
+
+### 4.2.1. Diagramas de dispersão dos resíduos
+
+O objetivo destes diagramas é identificar se os resíduos são independentes ou não das variáveis explicativas e da variável resposta. Para tal podemos utilizar o diagrama de dispersão pareada (com a função **pairs**, por exemplo) ou fazer cada diagrama manualmente.
+
+Neste caso a variável resposta é o comprimento da sépala e a única variável explicativa é a espécie. O primeiro diagrama pode ser um gráfico de pontos e o segundo um boxplot.
+
+```{r}
+ggplot(df.avaliacao.sepal.length,
+       mapping = aes(x = Predito, y = Residuo,
+                     colour = Species, fill = Species)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_point() +
+  labs(title = 'Dispersão dos resíduos pelo valor predito')
+```
+
+O segundo diagrama tem o objetivo de verificar a relação entre os resíduos e as variáveis explicativas. Para tal utilizamos um diagrama de dispersão:
+
+```{r}
+ggplot(df.avaliacao.sepal.length,
+       mapping = aes(x = Species, y = Residuo,
+                     colour = Species, fill = Species)) +
+  geom_boxplot(alpha = 0.5) +
+  geom_jitter() +
+  labs(title = 'Dispersão dos resíduos pelo valor predito')
+```
+
+Para verificar a adequação dos resíduos a uma distribuição normal, utilizamos o QQ-Plot, que pode ser gerado com o seguinte trecho:
+
+```{r}
+ggplot(df.avaliacao.sepal.length,
+       mapping = aes(sample = Residuo)) +
+  geom_qq(aes(colour = Species))+
+  geom_qq_line() +
+  labs(title = 'Gráfico de Probabilidade Normal dos resíduos') +
+  xlab('Quantis amostrais') +
+  ylab('Quantis teóricos')
+```
+
+
+# 5. Exercícios
+
+* Importação dos dados
+
+  + Utilize a função **data** para importar o dataset ***mtcars***. Estes dados são provenientes de uma revista automotiva de 1974 e contém informações sobre o consumo e desempenho de veículos da época. Estão disponíveis 32 observações das seguintes variáveis:
+
+    .	**mpg**: Consumo em milhas por galão;
+
+    .	**cyl**:	Número de cilindros;
+
+    .	**disp**:	Volume em polegadas cúbicas;
+
+    .	**hp**:	Potência bruta em *cavalos de potência* (*horsepower*);
+
+    .	**drat**:	Razão axial dos eixos;
+
+    .	**wt**:	Massa em milhares de libras;
+
+    .	**qsec**:	Tempo necessário para atingir a velocidade de um quarto de milha;
+
+    .	**vs**:	Tipo de motor (0 = Motor em forma de "V", 1 = Motor linear);
+
+    .	**am**:	Transmissão (0 = automática, 1 = manual);
+
+    .	**gear**:	Quantidade de marchas;
+
+    .	**carb**:	Quantidade de carburadores;
+  
+  + Declare um novo data.frame composto apenas colunas **mpg**, **cyl**, **hp**, **wt**, **am** e **vs**.
+
+* Transformação dos dados
+
+  + Vamos considerar que o tipo de motor é um fator de controle destes dados. Declare mais uma coluna chamada **tipoMotor**, que deve ter o valor "V-Shaped" caso o valor de **vs** seja 0 e "Normal" caso contrário. Após definida a coluna **tipoMotor** exclua a coluna **vs**.
+
+  + Repita a operação anterior criando a coluna **tipoTransmissao** que contém o valor "Automática" caso o valor da coluna **am** seja 0 e "Manual" caso contrário.
+
+  + Transforme a coluna **cyl** em um fator.
+
+* Visualização dos dados
+
+  + Utilizando a biblioteca ***ggplot2*** faça o boxplot da variável **mpg** considerando o **tipoMotor** como um fator de controle.
+
+  + Faça o diagrama de dispersão da variável **mpg** em relação a variável **wt**. Considere o tipo de motor como um fator de controle. Que tipo de relação as variáveis aparentam ter? o tipo de motor influencia no consumo?
+  
+  + Repita a análise anterior considerando o número de cilindros como fator de controle. Ele influencia no consumo?
+  
+  + Repita a análise anterior considerando o tipo de tranmissão como fator de controle. Ele influencia no consumo?
+
+  + Faça o diagrama de dispersão pareada das variáveis presentes no data.frame. Quais variáveis parecem estar mais correlacionadas com o consumo (**mpg**)?
+
+
