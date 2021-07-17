@@ -1,0 +1,312 @@
+---
+title: "EDA with R - Terceira parte"
+author: "Antonio Henrique"
+date: "01/07/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+# 1. Web Scraping
+
+Este documento realiza uma coleta de dados na plataforma Microsoft Academic, bucando por artigos científicos que tenham sido publicados entre 2020 e 2021, através da chave de busca "coronavirus disease 2019". Foram coletados os primeiros 400 artigos ordenados pela relevância.
+
+Para cada artigo foi registrado o título, o número total de citações e o segundo tópico no qual o artigo foi classificado (o primeiro tópico de todos os artigos é "Coronavirus Disease 2019 (COVID19)").
+
+Para visualizar os documentos que serão coletados, acesse https://academic.microsoft.com/search?q=coronavirus%20disease%202019&f=&eyl=Y%3C%3D2021&syl=Y%3E%3D2020&orderBy=0.
+
+# 2. Selenium
+
+No ambiente R será utilizada a biblbioteca ***RSelenium***, que é uma interface entre servidores ***Selenium*** e o ambiente de execução do software R. ***Selenium*** é uma plataforma que possibilita a automatização de navegadores de internet, através dela podemos escrever programas que operem os navegadores como se um humano realmente estivesse interagindo com o computador.
+
+Para que o código abaixo funcione, é necessário que um servidor ***Selenium*** esteja em execução na porta **4444** e na mesma máquina onde o R está sendo executado. Para mais informações sobre a instalação do servidor ***Selenium*** acesse https://www.selenium.dev/.
+
+
+# 3. Conexão com o servidor *Selenium*
+
+Para que seja possível conectar no servidor ***Selenium*** que está sendo executado, é necessário instalar a biblioteca ***RSelenium*** com o comando *install.packages('RSelenium')*. Uma vez que ela esteja disponível podemos importar e abrir uma conexão.
+
+```{r}
+library(RSelenium)
+# ?RSelenium
+
+# Conecta o R no servidor RSelenium.
+# O objeto remDriver guarda essa conexão.
+remDriver = remoteDriver(
+  remoteServerAddr = 'localhost', # O endereço do servidor é a própria máquina
+  port = 4444L,                   # A porta do servidor é 4444
+  browserName = 'firefox'         # O navegador firefox será utilizado
+)
+
+
+# Abre uma janela do navegador e salva as informações dela no objeto abertura
+abertura = remDriver$open()
+
+```
+
+Para orientar o navegador a acessar uma página da internet, utilizamos a função **navigate**, que pode ser encontrada como um elemento do objeto **remDriver**. O argumento passado para a função **navigate** é a URL da página que desejamos acessar.
+
+Em uma URL, chamamos de *query* o texto que vem após o endereço da página e que começa com um ponto de interrogação (**?**). A função da *query* é informar parâmetros de consulta que serão utilizados para construção da página.
+
+Abaixo definimos os componentes da nossa URL. O objeto **URL_BASE** guarda o endereço da página de busca do Microsoft Academic. O objeto **QUERY_BASE** guarda a *query* que será utilizada para buscar os artigos.
+
+Nesta *query* estamos delimitando os seguintes parâmetros:
+
+* **q=coronavirus%20disease%202019**: Chave de busca (*coronavirus disease 2019*)
+
+* **eyl=Y%3C%3D2021&syl=Y%3E%3D2020**: Período de publicação (*ano entre 2020 e 2021*)
+
+* **orderBy=0**: Ordenação dos resultados (*0 corresponde a ordenação por relevância*)
+
+Quando concatenamos os objetos **URL_BASE** e **QUERY_BASE** obtemos a URL completa da primeira página de resultados:
+
+```{r}
+
+URL_BASE = 'https://academic.microsoft.com/search'
+QUERY_BASE = '?q=coronavirus%20disease%202019&eyl=Y%3C%3D2021&syl=Y%3E%3D2020&orderBy=0'
+
+
+remDriver$navigate(paste0(URL_BASE, QUERY_BASE))
+```
+
+Observe que o navegador foi direcionado a página de busca do Microsoft Academic.
+
+# 4. Processamento da página
+
+Abaixo definimos algumas funções que facilitem a leitura e a organização do código. Elas serão utilizadas para buscar os elementos do documento HTML que correspondam aos artigos, e dentro de cada um destes elementos será recuperada a informação referente as variáveis de interesse (Título, Assunto e Quantidade de Citações).
+
+
+```{r}
+# Função genérica para realizar uma busca na página utilizando um seletor CSS
+# Utilizada para facilitar a leitura do código
+buscar_elementos_na_pagina = function (seletor, driver) {
+  
+  lista.elementos = driver$findElements(using = 'css', seletor)
+  
+  return (lista.elementos)
+}
+
+# Função genérica para realizar uma busca dentro de um elemento HTML utilizando um seletor CSS
+# Utilizada para facilitar a leitura do código
+buscar_elementos_filhos = function (seletor, elemento.pai) {
+  
+  lista.elementos = elemento.pai$findChildElements(using = 'css', seletor)
+  
+  return (lista.elementos)
+}
+
+
+# Seletores CSS utilizados para buscar os elementos com a informação desejada
+# para mais informações, acesse https://www.w3schools.com/css/css_selectors.asp
+seletorArtigos = '#mainArea div.ma-paper-results div.results div.paper div.primary_paper'
+seletorCitacoes = 'div.citations'
+seletorTitulo = 'a.title'
+seletorAssunto = '.paper-content .tag-mesh-cloud ma-tag-mesh .text'
+
+
+####
+## Esta função recebe um elemento HTML que corresponde a um artigo, e retorna uma
+## lista com as características deste artigo.
+##
+## Os artigos são identificados pela classe .primary-paper na lista de resultados
+## e as características são elementos dentro do corpo do artigo.
+##
+## O título está um link que possui a classe .title
+##
+## As citações estão uma div que possui a classe .citations
+##
+## Dois assuntos são exibidos para cada artigo, ambos sendo elementos do
+## tipo ma-tag-mesh. Apenas o segundo foi salvo.
+####
+processar_artigo = function (artigo) {
+  
+  webElement.titulo = buscar_elementos_filhos(seletorTitulo, artigo)[[1]]
+  webElement.citacoes = buscar_elementos_filhos(seletorCitacoes, artigo)[[1]]
+  webElement.assunto = buscar_elementos_filhos(seletorAssunto, artigo)[[2]]
+  
+  texto.titulo = webElement.titulo$getElementText()[[1]]
+  texto.citacoes = webElement.citacoes$getElementText()[[1]]
+  texto.assunto = webElement.assunto$getElementText()[[1]]
+  
+  numero.citacoes = readr::parse_number(texto.citacoes)
+  
+  return(
+    list(
+      QuantidadeCitacoes = numero.citacoes,
+      Assunto = texto.assunto,
+      Titulo = texto.titulo
+    )
+  )
+  
+}
+```
+
+Uma vez que temos todas as funções necessárias para processar um artigo individual da página, definimos uma função que busca todos os artigos presentes na página e combina suas características em um data.frame:
+
+```{r}
+
+extrair_dados_pagina = function (driver) {
+  
+  # Busca os elementos HTML que correspondem aos artigos
+  webElements.artigos = buscar_elementos_na_pagina(seletorArtigos, remDriver)
+
+  # Converte cada elemento em uma lista com suas características
+  registros.artigos = lapply(webElements.artigos, processar_artigo)
+ 
+  
+  # Combina os resultados em um data.frame
+  df.pagina = data.frame()
+  for (artigo in registros.artigos) {
+    df.pagina = rbind(df.pagina, artigo)
+  }
+  
+  return (df.pagina)
+}
+
+
+```
+
+
+Para visualizar o funcionamento até o momento, execute a função que acaba de ser declarada e um data.frame com os dados dos artigos presentes na página aberta será retornado.
+
+```{r}
+extrair_dados_pagina(remDriver)
+```
+
+Para coletar nosso dados precisamos percorrer as páginas de busca e em cada uma guardar os dados encontrados. Isto pode ser feito novamente pela função **navigate** do driver de conexão. A plataforma Microsoft Academic utiliza dois parâmetros na *query* para especificar a página de resultados:
+
+* **take**: Tamanho da página. Estaremos trabalhando com páginas de 10 artigos (valor padrão da plataforma).
+
+* **skip**: Quantidade de artigos que serão ignorados a partir do começo da lista. Este parâmetro nos dá controle sobre a página. A primeira página é obtida com o skip igual a 0, a segunda página com o skip igual a 10 e assim por diante. 
+
+
+```{r}
+
+TAMANHO_PAGINA = 10
+
+df.geral = data.frame()
+
+
+# Percorre as primeiras 40 páginas de resultados
+for (pagina in 1:40) {
+  
+  # Calcula a quantidade de artigos que devem ser ignorados
+  skip = pagina * TAMANHO_PAGINA
+  
+  # Declara os parâmetros que especificam a página
+  QUERY_PAGINA = paste0('&take=', TAMANHO_PAGINA, '&skip=', skip)
+  
+  # Monta a URL completa da página no formato:
+  #
+  # https://academic.microsoft.com/search?
+  #   q=coronavirus%20disease%202019&f=&eyl=Y%3C%3D2021&syl=Y%3E%3D2020&
+  #   orderBy=0&take=10&skip=<valor do objeto skip>
+  URL_PAGINA = paste0(URL_BASE, QUERY_BASE, QUERY_PAGINA)
+  
+  # Orienta o navegador a acessar a URL da página
+  remDriver$navigate(URL_PAGINA)
+  
+  # Aguarda 4 segundos para que a página seja completamente carregada
+  Sys.sleep(4)
+  
+  # Recupera os dados dos artigos presentes na página atual
+  dados.desta.pagina = extrair_dados_pagina(remDriver)
+  
+  # Adiciona os dados coletados no objeto df.geral
+  df.geral = rbind(df.geral, dados.desta.pagina)
+  
+}
+```
+
+
+Após o término do processamento temos um objeto que contém os dados de interesse para todos os artigos das primeiras 40 páginas, obtidos de forma automatizada. Este tipo de ferramenta possibilita que grandes volumes de dados sejam obtidos sem o risco de falha humana durante o processo (digitação incorreta, por exemplo).
+
+```{r}
+View(df.geral)
+write.csv(df.geral, file = 'exercicios/artigos_covid19.csv', row.names = FALSE)
+```
+
+
+# 5. Visualização dos dados
+
+Apenas a título de curiosidade foram algumas visualizações da informação coletada.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+
+
+# Cria um data frame de resumo dos assuntos, contendo o número de artigos e o total de citações 
+df.assuntos = df.geral  %>%
+  group_by(Assunto) %>%
+  summarise(QuantidadeCitacoes = sum(QuantidadeCitacoes),
+            QuantidadeArtigos = n())
+
+# Ordena os dados pelo total de citações
+ordem.citacoes = order(df.assuntos$QuantidadeCitacoes, decreasing = TRUE)
+df.assuntos = df.assuntos[ordem.citacoes, ]
+
+# Seleciona apenas as primeiras 10 linhas e transforma o Assunto em um novo fator
+df.assuntos = head(df.assuntos, 10)
+df.assuntos$Assunto = factor(df.assuntos$Assunto,
+                             levels = df.assuntos$Assunto)
+
+ggplot(df.assuntos,
+       mapping = aes(x = Assunto, y = QuantidadeCitacoes)) +
+  geom_col(mapping = aes(fill = QuantidadeArtigos)) +
+  geom_text(mapping = aes(label = QuantidadeArtigos),
+            color = 'white', vjust = 2) +
+  labs(title = '10 Assuntos com maior número de citações',
+       subtitle = 'A quantidade de artigos está apresentada dentro de cada coluna') +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+```
+
+Podemos ainda gerar uma nuvem de palavras utilizando a biblioteca ***ggwordcloud***, que extende as funcionalidades da biblioteca ***ggplot2***. Abaixo está sendo gerada a nuvem das palavras que mais apareceram nos títulos dos artigos.
+
+```{r fig.height=5, fig.width=10}
+# install.packages('ggwordcloud')
+library(ggwordcloud)
+
+extrair_palavras = function (artigo) {
+  
+  # remove os caracteres especiais do título do artigo
+  titulo.sanitizado = gsub('[[:punct:]]', '', artigo['Titulo'])
+  
+  # divide o títulos nas palavras separadas por um espaço em branco
+  palavras = strsplit(titulo.sanitizado, ' ', fixed = TRUE)[[1]]
+  
+  # seleciona somente as palavras com mais de 3 caracteres
+  palavras = palavras[nchar(palavras) > 3]
+  
+  # retorna a lista de palavras do título do artigo em caixa baixa
+  return (str_to_lower(palavras))
+}
+
+# Cria um vetor com todas as palavras dos títulos de todos os artigos
+vetor.palavras = unlist(apply(df.geral, 1, extrair_palavras))
+
+# Cria um data.frame com a frequência de cada palavra
+df.palavras = as.data.frame(table(vetor.palavras))
+colnames(df.palavras) = c('Palavra', 'Quantidade')
+
+# View(df.palavras)
+
+# gera a nuvem para as 20 palavras mais frequentes
+ggwordcloud(df.palavras$Palavra, df.palavras$Quantidade, max.words = 30,
+            random.color = TRUE)
+
+```
+
+
+
+```{r}
+
+# Seleciona apenas os artigos cuja palavra 'outbreak' apareceu no título
+selecao = str_count(str_to_lower(df.geral$Titulo),
+                    'outbreak') > 0
+
+df.geral[selecao, ]
+
+```

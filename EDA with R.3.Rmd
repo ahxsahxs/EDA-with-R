@@ -2,7 +2,9 @@
 title: "EDA with R - Terceira parte"
 author: "Antonio Henrique"
 date: "01/07/2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -27,6 +29,8 @@ Para trabalhar estes conceitos vamos utilizar o dataset **iris**, disponível no
 # ?iris
 data(iris)
 summary(iris)
+
+View(iris)
 ```
 
 Este dataset é composto de 150 observações anatômicas de flores de íris, sendo que cada observação informa a espécie do indivíduo, além das larguras e comprimentos da sépala e da pétala.
@@ -165,6 +169,14 @@ ggplot(iris.long, aes(x = Species, y = Medida, colour = TipoMedida)) +
   
 ```
 
+```{r}
+iris[132, ]
+```
+
+
+
+
+
 Poderíamos ainda dividir os gráficos de forma a separar as variáveis relacionadas ao comprimento daquelas relacionadas a largura:
 
 ```{r}
@@ -203,6 +215,12 @@ summary(modelo.linear.sepal.lenght)
 # summary(modelo.linear.petal.lenght)
 # summary(modelo.linear.petal.width)
 ```
+
+
+```{r}
+iris[132, 'Sepal.Length'] - mean(subset(iris, Species == 'virginica')$Sepal.Length)
+```
+
 
 A avaliação de um modelo estatístico é em geral feita através da análise de resíduos. Um das principais pressuposições assumidas para o modelo é de que os resíduos estão simetricamente distribuídos em torno do valor zero e não possuem dependência entre si. Alguns diagramas de análise residual são obtidos através da função **plot** passando como argumento o próprio modelo ajustado.
 
@@ -350,6 +368,9 @@ ggplot(df.avaliacao.sepal.length,
   geom_jitter() +
   labs(title = 'Dispersão dos resíduos pelo valor predito')
 ```
+
+
+
 
 Para verificar a adequação dos resíduos a uma distribuição normal, utilizamos o QQ-Plot, que pode ser gerado com o seguinte trecho:
 
